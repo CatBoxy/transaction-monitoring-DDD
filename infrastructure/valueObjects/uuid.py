@@ -16,3 +16,9 @@ class UUIDValue(ValueObject):
             print(ValidationException("uuid debe ser un uuid valido"))
             print(self.myUuid)
             raise ValidationException("uuid debe ser un uuid valido")
+
+    def __str__(self):
+        return self.myUuid
+
+    def __repr__(self):
+        return self.myUuid

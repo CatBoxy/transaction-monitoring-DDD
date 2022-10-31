@@ -1,22 +1,22 @@
-from abc import ABC
+
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 from infrastructure.ddd.aggregate_Id import AggregateId
+from infrastructure.ddd.domain_event import DomainEvent
+from infrastructure.ddd.event_stream import EventStream
 
 
-@dataclass(kw_only=True)
-class Aggregate(ABC):
+@dataclass
+class Aggregate():
     __aggregateId: AggregateId
     __version: int = field(init=False)
-    # __eventFlow: EventFlow = field(init=False)
-    # __pendingEvents: List[Event]
+    __events: List[Optional[DomainEvent]] = field(default_factory=lambda: [])
 
-    # def __post_init__(self):
-    #     if self.__eventFlow is not None:
-    #         for event in self.__eventFlow:
-    #             self.__version += 1
-    #             self.apply(event)
+    def __post_init__(self):
+        for event in self.__events:
+            self.__apply(event)
+        self.__version = 0
 
     def getAggregateId(self) -> AggregateId:
         return self.__aggregateId
@@ -24,11 +24,19 @@ class Aggregate(ABC):
     def getVersion(self) -> int:
         return self.__version
 
-    def _publish(self, event: Event):
-        self.__version += 1
-        metadata = DomainEventmetadata.newFromAggregate(self)
-        domainEvent = DomainEvent(metadata=metadata, event=event)
-        self.__pendingEvents.append(domainEvent)
-        self.apply(domainEvent)
+    def getPendingEvents(self) -> EventStream:
+        eventStream = EventStream(self.__events)
+        self.__events = []
+        return eventStream
 
-    # def apply(self):
+    def _publish(self, event):
+        self.__version += 1
+        self.__events.append(event)
+        self.__apply(event)
+
+    def __apply(self, event):
+        applyName = "_apply" + event.__class__.__name__
+        if hasattr(self, applyName):
+            eventApply = getattr(self, applyName)
+            eventApply(event)
+

@@ -1,40 +1,89 @@
 from dataclasses import dataclass
-from typing import Optional
 
+import uuid
+
+from domain.events.transaction_created import TransactionCreated
 from infrastructure.ddd.aggregate import Aggregate
 from infrastructure.ddd.aggregate_Id import AggregateId
-from infrastructure.valueObjects.account_number import AccountNumber
-from infrastructure.valueObjects.amount import Amount
-from infrastructure.valueObjects.currency import Currency
-from infrastructure.valueObjects.date_time import DateTime
-from infrastructure.valueObjects.doc_number import DocNumber
-from infrastructure.valueObjects.doc_type import Doctype
-from infrastructure.valueObjects.ip import IpAddress
-from infrastructure.valueObjects.method import Method
-from infrastructure.valueObjects.name import Name
-from infrastructure.valueObjects.type import Type
-from infrastructure.valueObjects.uuid import UUIDValue
+
+from infrastructure.valueObjects.payment_type import PaymentType
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Transaction(Aggregate):
-    uuid: UUIDValue
-    accountNumber: AccountNumber
-    dateTime: DateTime
-    type: Type
-    method: Method
-    amount: Amount
-    currency: Currency
-    partyDocType: Optional[Doctype]
-    partyDocNumber: Optional[DocNumber]
-    cleanPartyDocNumber: Optional[DocNumber]
-    partyAccountNumber: Optional[AccountNumber]
-    partyName: Optional[Name]
-    requestIp: Optional[IpAddress]
-    externalReference: str
 
     def getTransactionId(self) -> AggregateId:
         return self.getAggregateId()
 
-    # def createTransaction(self):
+    @classmethod
+    def create(
+            cls,
+            uuid,
+            accountNumber,
+            dateTime,
+            loadedDateTime,
+            type,
+            method,
+            amount,
+            currency,
+            partyDocType,
+            partyDocNumber,
+            cleanPartyDocNumber,
+            partyAccountNumber,
+            partyName,
+            requestIp,
+            externalReference
+    ):
+        transaction = Transaction(__aggregateId=uuid)
+        transactionCreated = TransactionCreated(
+            transactionId=uuid,
+            accountNumber=accountNumber,
+            dateTime=dateTime,
+            loadedDateTime=loadedDateTime,
+            type=type,
+            method=method,
+            amount=amount,
+            currency=currency,
+            partyDocType=partyDocType,
+            partyDocNumber=partyDocNumber,
+            cleanPartyDocNumber=cleanPartyDocNumber,
+            partyAccountNumber=partyAccountNumber,
+            partyName=partyName,
+            requestIp=requestIp,
+            externalReference=externalReference
+        )
+        transaction._publish(transactionCreated)
+        return transaction
 
+    def _applyTransactionCreated(self, event: TransactionCreated):
+        self.loaded = True
+        self.loadedDate = event.loadedDateTime
+
+    def getLoadedTime(self):
+        return self.loadedDate
+
+
+myUuid = str(uuid.uuid4())
+transaction = Transaction.create(
+    uuid=myUuid,
+    accountNumber='654',
+    dateTime="2022-09-16 20:15:20",
+    loadedDateTime="2022-10-25 10:15:20",
+    type='incoming_payment',
+    method='debit_card',
+    amount='45',
+    currency='ARS',
+    partyDocType='DNI',
+    partyDocNumber='38.091.922',
+    cleanPartyDocNumber='38091922',
+    partyAccountNumber='415',
+    partyName='Juan',
+    requestIp='192.0.2.1',
+    externalReference='external reference'
+)
+
+print(transaction)
+print(transaction.getTransactionId())
+print(transaction.loadedDate)
+print(transaction.loaded)
+print(transaction.getVersion())

@@ -3,10 +3,11 @@ from dataclasses import dataclass
 
 
 @dataclass
-class AbstractMessage(ABC):
+class AbstractMessage():
+    __payload: Payload
 
-    __payload: dict
-
-    def getPayload(self) -> dict:
+    def getPayload(self) -> Payload:
         return self.__payload
 
+    def getType(self) -> str:
+        return type(self.__payload).__name__
