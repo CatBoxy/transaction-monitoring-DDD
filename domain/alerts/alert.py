@@ -17,7 +17,7 @@ class Alert(Aggregate):
             redFlag,
             dateFrom,
             dateTo,
-            # metaData,
+            params,
             transactions
     ):
         alert = Alert(uuid)
@@ -29,7 +29,7 @@ class Alert(Aggregate):
             redFlag=redFlag,
             dateFrom=dateFrom,
             dateTo=dateTo,
-            # metaData=metaData,
+            params=params,
             transactions=transactions
         )
         alert._publish(alertFired)
@@ -38,7 +38,7 @@ class Alert(Aggregate):
     def dismiss(self, dateTime):
         if self.dismissed:
             raise ValueError("Alerta ya descartada")
-        event = AlertDismissed(dismissalDate=dateTime)
+        event = AlertDismissed(dismissalDate=dateTime, alertId=self.getAggregateId().getUUID().myUuid)
         self._publish(event)
 
     def _applyAlertFired(self, event: AlertFired):

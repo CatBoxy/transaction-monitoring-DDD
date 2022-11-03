@@ -23,6 +23,9 @@ class MetadataDomainEvent(EventMetadata):
     def getAggregateId(self) -> str:
         return self.__aggregateId
 
+    def getOrderNumber(self) -> int:
+        return self.__orderNumber
+
     def withSequence(self, sequence: int):
         if self.__sequence > 0:
             raise ValueError('Secuencia ya asignada')
@@ -30,7 +33,8 @@ class MetadataDomainEvent(EventMetadata):
         metadata.__sequence = sequence
         return metadata
 
-    def newFromAggregate(self, aggregate: Aggregate):
+    @staticmethod
+    def newFromAggregate(aggregate: Aggregate):
         metadataDomainEvent = MetadataDomainEvent(
             __messageId=str(uuid.uuid4()),
             __timestamp=time(),

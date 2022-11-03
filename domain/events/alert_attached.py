@@ -1,11 +1,18 @@
+import json
 from dataclasses import dataclass
 
-from infrastructure.valueObjects.date_time import DateTime
-from infrastructure.valueObjects.uuid import UUIDValue
+from infrastructure.ddd.serializable import Serializable
 
 
 @dataclass(frozen=True)
-class AlertAttached():
-    investigationId: UUIDValue
-    attachedDate: DateTime
-    alertId: UUIDValue
+class AlertAttached(Serializable):
+    investigationId: str
+    attachedDate: str
+    alertId: str
+
+    def toMap(self):
+        return self.__dict__
+
+    @classmethod
+    def fromMap(cls, myMap: dict):
+        return cls(**myMap)

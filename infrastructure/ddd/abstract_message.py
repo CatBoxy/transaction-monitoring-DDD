@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+from infrastructure.ddd.serializable import Serializable
+
 
 @dataclass
 class AbstractMessage():
-    __payload: Payload
+    __payload: Serializable
 
-    def getPayload(self) -> Payload:
+    def getPayload(self) -> Serializable:
         return self.__payload
 
     def getType(self) -> str:

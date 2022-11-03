@@ -5,6 +5,7 @@ from typing import List, Optional
 from infrastructure.ddd.aggregate_Id import AggregateId
 from infrastructure.ddd.domain_event import DomainEvent
 from infrastructure.ddd.event_stream import EventStream
+from infrastructure.ddd.metadata_domain_event import MetadataDomainEvent
 
 
 @dataclass
@@ -31,8 +32,10 @@ class Aggregate():
 
     def _publish(self, event):
         self.__version += 1
-        self.__events.append(event)
-        self.__apply(event)
+        metadata = MetadataDomainEvent.newFromAggregate(aggregate=self)
+        domainEvent = DomainEvent(__payload=event, __metadata=metadata)
+        self.__events.append(domainEvent)
+        self.__apply(domainEvent)
 
     def __apply(self, event):
         applyName = "_apply" + event.__class__.__name__

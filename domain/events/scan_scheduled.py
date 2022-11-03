@@ -1,16 +1,21 @@
+import json
 from dataclasses import dataclass
-from typing import List
 
-from infrastructure.rules.rule import Rule
-from infrastructure.valueObjects.date_time import DateTime
-from infrastructure.valueObjects.uuid import UUIDValue
+from infrastructure.ddd.serializable import Serializable
 
 
 @dataclass(frozen=True)
-class ScanScheduled():
-    screeningId: UUIDValue
-    startingDate: DateTime
-    redFlags: List[Rule]
-    periodStart: DateTime
-    periodEnd: DateTime
+class ScanScheduled(Serializable):
+    screeningId: str
+    startingDate: str
+    redFlags: list
+    periodStart: str
+    periodEnd: str
     isFullScan: bool
+
+    def toMap(self):
+        return self.__dict__
+
+    @classmethod
+    def fromMap(cls, myMap: dict):
+        return cls(**myMap)

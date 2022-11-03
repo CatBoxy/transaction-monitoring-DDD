@@ -1,19 +1,32 @@
+import json
 from dataclasses import dataclass
-from typing import List
+from typing import Tuple, Union
 
-from infrastructure.rules.rule import Rule
-from infrastructure.valueObjects.date_time import DateTime
-from infrastructure.valueObjects.uuid import UUIDValue
+from infrastructure.ddd.serializable import Serializable
 
 
 @dataclass(frozen=True)
-class AlertFired():
-    alertId: UUIDValue
-    accountId: UUIDValue
-    screeningId: UUIDValue
-    creationDateTime: DateTime
-    redFlag: Rule
-    dateFrom: DateTime
-    dateTo: DateTime
-    # metaData: AlertMetadata
-    transactions: List[UUIDValue]
+class RuleParam():
+    name: str
+    value: str
+
+
+@dataclass(frozen=True)
+class AlertFired(Serializable):
+    alertId: str
+    accountId: str
+    screeningId: str
+    creationDateTime: str
+    redFlag: str
+    dateFrom: str
+    dateTo: str
+    params: Tuple[RuleParam, ...]
+    transactions: list
+
+    def toMap(self):
+        return self.__dict__
+
+    @classmethod
+    def fromMap(cls, myMap: dict):
+        return cls(**myMap)
+

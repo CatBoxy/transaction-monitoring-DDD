@@ -1,13 +1,18 @@
+import json
 from dataclasses import dataclass
-from typing import List
 
-from infrastructure.rules.rule import Rule
-from infrastructure.valueObjects.date_time import DateTime
-from infrastructure.valueObjects.uuid import UUIDValue
+from infrastructure.ddd.serializable import Serializable
 
 
 @dataclass(frozen=True)
-class ScanExecuted():
-    screeningId: UUIDValue
-    executionDate: DateTime
-    redFlags: List[Rule]
+class ScanExecuted(Serializable):
+    screeningId: str
+    executionDate: str
+    redFlags: list
+
+    def toMap(self):
+        return self.__dict__
+
+    @classmethod
+    def fromMap(cls, myMap: dict):
+        return cls(**myMap)
