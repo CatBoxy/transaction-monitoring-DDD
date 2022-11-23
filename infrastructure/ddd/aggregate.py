@@ -6,6 +6,7 @@ from infrastructure.ddd.aggregate_Id import AggregateId
 from infrastructure.ddd.domain_event import DomainEvent
 from infrastructure.ddd.event_stream import EventStream
 from infrastructure.ddd.metadata_domain_event import MetadataDomainEvent
+from infrastructure.ddd.serializable import Serializable
 
 
 @dataclass
@@ -30,16 +31,16 @@ class Aggregate():
         self.__events = []
         return eventStream
 
-    def _publish(self, event):
+    def _publish(self, event: Serializable):
         self.__version += 1
         metadata = MetadataDomainEvent.newFromAggregate(aggregate=self)
-        domainEvent = DomainEvent(__payload=event, __metadata=metadata)
+        domainEvent = DomainEvent(event, metadata)
         self.__events.append(domainEvent)
         self.__apply(domainEvent)
 
-    def __apply(self, event):
-        applyName = "_apply" + event.__class__.__name__
+    def __apply(self, event: DomainEvent):
+        payload = event.getPayload()
+        applyName = "_apply" + payload.__class__.__name__
         if hasattr(self, applyName):
             eventApply = getattr(self, applyName)
             eventApply(event)
-

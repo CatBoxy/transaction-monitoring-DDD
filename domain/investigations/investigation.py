@@ -8,6 +8,8 @@ from domain.events.investigation_opened import InvestigationOpened
 from domain.events.post_added import PostAdded
 from domain.events.subject_linked import SubjectLinked
 from infrastructure.ddd.aggregate import Aggregate
+from infrastructure.ddd.aggregate_Id import AggregateId
+from infrastructure.valueObjects.date_time import DateTime
 from infrastructure.valueObjects.uuid import UUIDValue
 
 
@@ -18,16 +20,16 @@ class Investigation(Aggregate):
     subjects: Optional[List] = None
     evidence: Optional[List] = None
 
-    def getInvestigationId(self) -> UUIDValue:
+    def getInvestigationId(self) -> str:
         return self.getAggregateId().getUUID()
 
     @classmethod
     def create(
             cls,
-            uuid,
-            startingDate
+            uuid: UUIDValue,
+            startingDate: DateTime
     ):
-        investigation = Investigation(uuid)
+        investigation = Investigation(AggregateId(uuid.myUuid))
         if investigation.alerts is None:
             investigation.alerts = []
         if investigation.posts is None:
@@ -37,8 +39,8 @@ class Investigation(Aggregate):
         if investigation.evidence is None:
             investigation.evidence = []
         investigationOpened = InvestigationOpened(
-            investigationId=uuid,
-            startingDate=startingDate
+            investigationId=uuid.myUuid,
+            startingDate=startingDate.dateTime
         )
         investigation._publish(investigationOpened)
         return investigation
@@ -89,3 +91,4 @@ class Investigation(Aggregate):
 
     def _applyInvestigationClosed(self, event: InvestigationClosed):
         self.closed = True
+        self.closingDate = event.closingDate

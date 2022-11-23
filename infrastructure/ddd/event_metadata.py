@@ -12,6 +12,6 @@ class EventMetadata(MessageMetadata):
     def getTimestamp(self) -> float:
         return self.__timestamp
 
-    def getDatetimeUTC(self) -> DateTime:
+    def getDatetimeUTC(self) -> str:
         date = datetime.utcfromtimestamp(self.__timestamp).strftime('%Y-%m-%d %H:%M:%S')
-        return DateTime(date)
+        return DateTime(date).dateTime

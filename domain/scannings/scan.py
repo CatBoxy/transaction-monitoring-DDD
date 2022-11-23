@@ -5,30 +5,33 @@ from domain.events.scan_ended import ScanEnded
 from domain.events.scan_executed import ScanExecuted
 from domain.events.scan_scheduled import ScanScheduled
 from infrastructure.ddd.aggregate import Aggregate
+from infrastructure.ddd.aggregate_Id import AggregateId
+from infrastructure.valueObjects.date_time import DateTime
 from infrastructure.valueObjects.uuid import UUIDValue
 
 
 @dataclass
 class Scan(Aggregate):
-    def getScanId(self) -> UUIDValue:
+    def getScanId(self) -> str:
         return self.getAggregateId().getUUID()
+
     @classmethod
     def schedule(
             cls,
-            uuid,
-            startingDate,
+            uuid: UUIDValue,
+            startingDate: DateTime,
             rules,
-            periodStart,
-            periodEnd,
-            isFullScan
+            periodStart: DateTime,
+            periodEnd: DateTime,
+            isFullScan: bool
     ):
-        scan = Scan(uuid)
+        scan = Scan(AggregateId(uuid.myUuid))
         scanScheduled = ScanScheduled(
-            screeningId=uuid,
-            startingDate=startingDate,
+            screeningId=uuid.myUuid,
+            startingDate=startingDate.dateTime,
             redFlags=rules,
-            periodStart=periodStart,
-            periodEnd=periodEnd,
+            periodStart=periodStart.dateTime,
+            periodEnd=periodEnd.dateTime,
             isFullScan=isFullScan
         )
         scan._publish(scanScheduled)

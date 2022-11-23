@@ -25,3 +25,4 @@ watchfiles==0.17.0
 websockets==10.3
 
 mysql-connector-python~=8.0.31
+pytz~=2022.6

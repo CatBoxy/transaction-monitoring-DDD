@@ -13,3 +13,6 @@ class AbstractMessage():
 
     def getType(self) -> str:
         return type(self.__payload).__name__
+
+    def getModule(self) -> str:
+        return self.__payload.__class__.__module__

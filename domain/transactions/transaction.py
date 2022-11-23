@@ -1,89 +1,68 @@
 from dataclasses import dataclass
 
-import uuid
-
 from domain.events.transaction_created import TransactionCreated
 from infrastructure.ddd.aggregate import Aggregate
 from infrastructure.ddd.aggregate_Id import AggregateId
-
-from infrastructure.valueObjects.payment_type import PaymentType
+from infrastructure.ddd.domain_event import DomainEvent
+from infrastructure.valueObjects.account_number import AccountNumber
+from infrastructure.valueObjects.date_time import DateTime
+from infrastructure.valueObjects.doc_number import DocNumber
+from infrastructure.valueObjects.ip import IpAddress
+from infrastructure.valueObjects.money import Money
+from infrastructure.valueObjects.name import Name
+from infrastructure.valueObjects.payment import Payment
+from infrastructure.valueObjects.uuid import UUIDValue
 
 
 @dataclass
 class Transaction(Aggregate):
 
-    def getTransactionId(self) -> AggregateId:
-        return self.getAggregateId()
+    def getTransactionId(self) -> str:
+        return self.getAggregateId().getUUID()
 
     @classmethod
     def create(
             cls,
-            uuid,
-            accountNumber,
-            dateTime,
-            loadedDateTime,
-            type,
-            method,
-            amount,
-            currency,
-            partyDocType,
-            partyDocNumber,
-            cleanPartyDocNumber,
-            partyAccountNumber,
-            partyName,
-            requestIp,
-            externalReference
+            uuid: UUIDValue,
+            accountNumber: AccountNumber,
+            dateTime: DateTime,
+            loadedDateTime: DateTime,
+            type: Payment,
+            method: Payment,
+            amount: Money,
+            currency: Money,
+            partyDocType: DocNumber,
+            partyDocNumber: DocNumber,
+            partyAccountNumber: AccountNumber,
+            partyName: Name,
+            requestIp: IpAddress,
+            externalReference: str
     ):
-        transaction = Transaction(__aggregateId=uuid)
+        transaction = Transaction(AggregateId(uuid.myUuid))
         transactionCreated = TransactionCreated(
-            transactionId=uuid,
-            accountNumber=accountNumber,
-            dateTime=dateTime,
-            loadedDateTime=loadedDateTime,
-            type=type,
-            method=method,
-            amount=amount,
-            currency=currency,
-            partyDocType=partyDocType,
-            partyDocNumber=partyDocNumber,
-            cleanPartyDocNumber=cleanPartyDocNumber,
-            partyAccountNumber=partyAccountNumber,
-            partyName=partyName,
-            requestIp=requestIp,
+            transactionId=uuid.myUuid,
+            accountNumber=accountNumber.number,
+            dateTime=dateTime.dateTime,
+            loadedDateTime=loadedDateTime.dateTime,
+            type=type.transactionType,
+            method=method.transactionMethod,
+            amount=amount.number,
+            currency=currency.currency,
+            partyDocType=partyDocType.docType,
+            partyDocNumber=partyDocNumber.number,
+            partyAccountNumber=partyAccountNumber.number,
+            partyName=partyName.name,
+            requestIp=requestIp.address,
             externalReference=externalReference
         )
         transaction._publish(transactionCreated)
         return transaction
 
-    def _applyTransactionCreated(self, event: TransactionCreated):
+    def _applyTransactionCreated(self, event: DomainEvent):
         self.loaded = True
-        self.loadedDate = event.loadedDateTime
+        eventType = event.getPayload().__class__.__name__
+        if eventType == self.__class__.__name__:
+            self.loadedDate = event.getPayload().loadedDateTime
 
     def getLoadedTime(self):
         return self.loadedDate
-
-
-myUuid = str(uuid.uuid4())
-transaction = Transaction.create(
-    uuid=myUuid,
-    accountNumber='654',
-    dateTime="2022-09-16 20:15:20",
-    loadedDateTime="2022-10-25 10:15:20",
-    type='incoming_payment',
-    method='debit_card',
-    amount='45',
-    currency='ARS',
-    partyDocType='DNI',
-    partyDocNumber='38.091.922',
-    cleanPartyDocNumber='38091922',
-    partyAccountNumber='415',
-    partyName='Juan',
-    requestIp='192.0.2.1',
-    externalReference='external reference'
-)
-
-print(transaction)
-print(transaction.getTransactionId())
-print(transaction.loadedDate)
-print(transaction.loaded)
-print(transaction.getVersion())

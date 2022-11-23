@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -6,12 +7,17 @@ from infrastructure.ddd.validation_exception import ValidationException
 
 
 @dataclass(frozen=True)
-class Currency(ValueObject):
-    currencyValues: ClassVar[list] = ['ARS', 'USD']
+class Money(ValueObject):
+    number: str
     currency: str
+    __currencyValues: ClassVar[list] = ['ARS', 'USD']
 
     def __post_init__(self):
-        if self.currency not in Currency.currencyValues:
+        if not re.search('[a-zA-Z]', self.number) is None:
+            print(ValidationException("amount debe poseer solo numeros"))
+            print(self.number)
+            raise ValidationException("amount debe poseer solo numeros")
+        if self.currency not in Money.__currencyValues:
             print(ValidationException("currency invalido"))
             print(self.currency)
             raise ValidationException("currency invalido")

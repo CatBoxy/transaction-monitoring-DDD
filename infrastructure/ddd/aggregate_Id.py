@@ -9,7 +9,7 @@ from infrastructure.valueObjects.uuid import UUIDValue
 @dataclass
 class AggregateId():
     # __tag: str
-    __uuid: UUIDValue
+    __uuid: str
 
     # def __post_init__(self):
     #     if len(self.__tag) == 0:
@@ -20,5 +20,5 @@ class AggregateId():
     # def getTag(self) -> str:
     #     return self.__tag
 
-    def getUUID(self) -> UUIDValue:
+    def getUUID(self) -> str:
         return self.__uuid

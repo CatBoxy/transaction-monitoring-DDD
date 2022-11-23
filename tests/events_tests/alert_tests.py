@@ -28,10 +28,6 @@ def test_alert_fired():
     alertDict = alert.toMap()
     assert type(alertDict) == dict
 
-    # myDict = json.JSONDecoder().decode(s=dtoString)
-
-    # assert type(myDict) == dict
-    #
     className = 'AlertFired'
     my_module = importlib.import_module("domain.events.alert_fired")
     MyClass = getattr(my_module, className)

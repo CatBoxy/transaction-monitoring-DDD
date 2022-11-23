@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+
 
 from infrastructure.ddd.aggregate import Aggregate
 from infrastructure.ddd.aggregate_Id import AggregateId
@@ -8,50 +8,29 @@ import importlib
 from infrastructure.persistence.event_store import EventStore
 
 
-@dataclass
 class AggregateRepository():
-    # checkear constructor de RepAgregacionesEventSourced.php
-    __eventStore: EventStore
-    __class: str
+    def __init__(self, eventStore: EventStore, module: str, className: str):
+        self.__eventStore = eventStore
+        self.__module = module
+        self.__class = className
 
-    def getAggregate(self, aggregateId: AggregateId) -> Aggregate:
-        eventStream = self.__eventStore.getFromAggregate(aggregateId)
+    def _getAggregate(self, aggregateId: AggregateId) -> Aggregate:
+        eventStream = self.__eventStore.obtainFromAggregate(aggregateId)
         if eventStream.isEmpty():
             raise AggregateNotFound(aggregateId.getUUID())
         try:
-            # Checkear que exista la agregacion??
-            AggregatePathLoader.isAggregate(self.__class)
-            path = AggregatePathLoader.getImportString(self.__class)
-            my_module = importlib.import_module(path)
+            my_module = importlib.import_module(self.__module)
             myClass = getattr(my_module, self.__class)
             aggregate = myClass(aggregateId, eventStream)
             return aggregate
         except ValueError:
             print()
             raise ValueError('Clase inexistente {0}'.format(self.__class))
-            # my_module = importlib.import_module("module.submodule")
-            # MyClass = getattr(my_module, self.__class)
-            # instance = MyClass()
 
-
-@dataclass
-class AggregatePathLoader():
-    __paths = {
-        "alert": "domain.alerts.alert",
-        "transaction": "domain.transactions.transaction",
-        "scan": "domain.scannings.scan",
-        "investigation": "domain.investigations.investigation"
-    }
-
-    @classmethod
-    def getImportString(cls, className) -> str:
-        if className in cls.__paths.keys():
-            return cls.__paths.get(className)
-
-
-    @classmethod
-    def isAggregate(cls, className) -> bool:
-        if className in cls.__paths.keys():
-            return True
-        else:
-            raise ValueError
+    def _saveAggregate(self, aggregate: Aggregate):
+        aggregateClass = aggregate.__class__.__name__
+        if aggregateClass != self.__class:
+            raise Exception(
+                'Clase de agregacion {aggregateClass}, se esperaba una agregacion de clase {__class}'.format(
+                    aggregateClass=aggregateClass, __class=self.__class))
+        self.__eventStore.save(aggregate.getAggregateId(), aggregate.getPendingEvents())

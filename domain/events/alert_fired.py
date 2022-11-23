@@ -10,6 +10,13 @@ class RuleParam():
     name: str
     value: str
 
+    def toMap(self):
+        return self.__dict__
+
+    @classmethod
+    def fromMap(cls, myMap: dict):
+        return cls(**myMap)
+
 
 @dataclass(frozen=True)
 class AlertFired(Serializable):
@@ -28,5 +35,9 @@ class AlertFired(Serializable):
 
     @classmethod
     def fromMap(cls, myMap: dict):
+        myParams = myMap['params']
+        myMap['params'] = []
+        for param in myParams:
+            myMap['params'].append(RuleParam.fromMap(param))
+        myMap['params'] = tuple(myMap['params'])
         return cls(**myMap)
-

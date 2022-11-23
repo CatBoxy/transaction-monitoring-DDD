@@ -1,9 +1,13 @@
+from __future__ import annotations
 import uuid
 from copy import copy
 from dataclasses import dataclass
 from time import time
 
-from infrastructure.ddd.aggregate import Aggregate
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from infrastructure.ddd.aggregate import Aggregate
 from infrastructure.ddd.event_metadata import EventMetadata
 
 
@@ -34,13 +38,13 @@ class MetadataDomainEvent(EventMetadata):
         return metadata
 
     @staticmethod
-    def newFromAggregate(aggregate: Aggregate):
+    def newFromAggregate(aggregate: Aggregate) -> 'MetadataDomainEvent':
         metadataDomainEvent = MetadataDomainEvent(
-            __messageId=str(uuid.uuid4()),
-            __timestamp=time(),
-            __sequence=-1,
-            __aggregate=type(aggregate).__name__,
-            __aggregateId=aggregate.getAggregateId().getUUID().myUuid,
-            __orderNumber=aggregate.getVersion()
+            str(uuid.uuid4()),
+            time(),
+            -1,
+            type(aggregate).__name__,
+            aggregate.getAggregateId().getUUID(),
+            aggregate.getVersion()
         )
         return metadataDomainEvent

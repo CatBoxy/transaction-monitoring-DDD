@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Rule():
-    _code: int
+    __code: int
 
     def getRuleCode(self) -> int:
-        return self._code
+        return self.__code

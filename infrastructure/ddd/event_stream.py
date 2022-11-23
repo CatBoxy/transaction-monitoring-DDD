@@ -16,7 +16,7 @@ class EventStream():
 
     def isEmpty(self) -> bool:
         if len(self.__events) == 0:
-            return False
-        else:
             return True
+        else:
+            return False
 
